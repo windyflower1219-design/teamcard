@@ -1,0 +1,1447 @@
+<!DOCTYPE html>
+<html lang="ko">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>To-do List</title>
+    <!-- PWA Meta Tags -->
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#667eea">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <link rel="apple-touch-icon" href="icon-192.png">
+
+    <!-- React and Babel CDN -->
+    <script src="https://unpkg.com/react@18/umd/react.development.js"></script>
+    <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+
+    <script>
+        // Service Worker Registration
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('./sw.js')
+                    .then(reg => console.log('SW registered!', reg))
+                    .catch(err => console.log('SW registration failed:', err));
+            });
+        }
+    </script>
+    <!-- Google Fonts: Gamja Flower for an even cuter, handwritten look -->
+    <link href="https://fonts.googleapis.com/css2?family=Gamja+Flower&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #6366f1;
+            --primary-hover: #4f46e5;
+            --bg-gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            --glass-bg: rgba(255, 255, 255, 0.9);
+            --text-main: #1f2937;
+            --text-muted: #6b7280;
+            --danger: #ef4444;
+            --sub-task-bg: rgba(99, 102, 241, 0.05);
+        }
+
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: 'Gamja Flower', cursive;
+            background: var(--bg-gradient);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        #root {
+            width: 100%;
+            max-width: 500px;
+            padding: 20px;
+        }
+
+        .todo-container {
+            background: var(--glass-bg);
+            backdrop-filter: blur(10px);
+            border-radius: 24px;
+            padding: 30px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2);
+            animation: fadeIn 0.6s ease-out;
+        }
+
+        /* Responsive adjustments for mobile */
+        @media (max-width: 480px) {
+            #root {
+                padding: 12px;
+            }
+
+            .todo-container {
+                padding: 20px 15px;
+                border-radius: 20px;
+            }
+
+            h1 {
+                font-size: 1.6rem;
+                margin-bottom: 1.5rem;
+            }
+
+            .input-group {
+                /* Fix for Yellow Box: Keep it row on mobile */
+                flex-direction: row;
+                gap: 8px;
+            }
+
+            .add-btn {
+                /* Improved Mobile Add Button */
+                padding: 0 16px;
+                /* Restore padding for text */
+                width: auto;
+                /* Allow auto width */
+                min-width: 60px;
+                border-radius: 12px;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                font-size: 1.0rem;
+                /* Normal font size */
+            }
+
+            /* Restore text on mobile, hide icon */
+            .add-btn span.text {
+                display: block;
+            }
+
+            .add-btn span.icon {
+                display: none;
+            }
+
+            .todo-item {
+                padding: 12px 10px;
+            }
+
+            .todo-checkbox {
+                left: 14px;
+            }
+
+            .delete-btn {
+                right: 8px;
+            }
+
+            .sub-tasks-container {
+                margin-left: 10px;
+                padding-left: 15px;
+            }
+
+            .sub-task-item {
+                width: 100%;
+                font-size: 0.9rem;
+                padding: 8px 10px 8px 6px;
+                /* 왼쪽 패딩 축소 */
+                white-space: normal;
+                word-break: break-all;
+            }
+
+            .sub-task-input-group {
+                max-width: 100%;
+            }
+
+            /* Fix for Green Box: Ensure last item isn't covered */
+            .todo-list {
+                padding-bottom: 200px;
+                /* Increased space for selection toolbar */
+            }
+
+            /* Fix for Red Box: Header buttons */
+            .header-btn-group {
+                gap: 6px;
+                padding: 6px 10px;
+                flex-wrap: nowrap;
+                width: 100%;
+                justify-content: space-evenly;
+            }
+
+            .header-action-btn {
+                min-width: 0;
+                /* Allow shrinking */
+                padding: 4px;
+                flex: 1;
+            }
+
+            .header-action-btn .icon {
+                font-size: 1.2rem;
+            }
+
+            .header-action-btn .label {
+                font-size: 0.6rem;
+                /* Smaller text */
+                white-space: nowrap;
+                letter-spacing: -0.5px;
+                /* Tighter tracking */
+            }
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .todo-container h1 {
+            color: var(--text-main);
+            font-size: 2.2rem;
+            margin: 0;
+            font-weight: 700;
+            letter-spacing: -0.5px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.2s;
+            border-radius: 8px;
+            padding: 4px 12px;
+            word-break: break-word;
+            /* Allow long titles to wrap */
+            min-width: 0;
+            /* Allow shrinking in flex/grid */
+            line-height: 1.2;
+        }
+
+        .todo-container h1:hover {
+            background: rgba(0, 0, 0, 0.05);
+        }
+
+        .title-input {
+            font-size: 2.0rem;
+            /* Slightly smaller to fit border */
+            font-weight: 700;
+            text-align: center;
+            border: 2px solid var(--primary);
+            border-radius: 8px;
+            padding: 2px 10px;
+            font-family: inherit;
+            color: var(--text-main);
+            background: rgba(255, 255, 255, 0.8);
+            width: 100%;
+            outline: none;
+            box-sizing: border-box;
+            min-width: 0;
+        }
+
+        .header-container {
+            display: flex;
+            flex-direction: column;
+            /* Stacked layout is much more stable for title + 5 buttons */
+            align-items: center;
+            margin-bottom: 2rem;
+            gap: 12px;
+            width: 100%;
+            position: relative;
+        }
+
+        .header-btn-group {
+            display: flex;
+            gap: 12px;
+            justify-content: center;
+            align-items: center;
+            background: rgba(255, 255, 255, 0.4);
+            padding: 8px 20px;
+            border-radius: 24px;
+            backdrop-filter: blur(8px);
+            border: 1px solid rgba(255, 255, 255, 0.4);
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+        }
+
+        .header-action-btn {
+            background: transparent;
+            border: none;
+            cursor: pointer;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 4px;
+            padding: 6px 10px;
+            border-radius: 12px;
+            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+            min-width: 60px;
+            color: var(--text-main);
+            opacity: 0.7;
+        }
+
+        .header-action-btn:hover:not(:disabled) {
+            background: rgba(0, 0, 0, 0.05);
+            opacity: 1;
+            transform: translateY(-2px);
+        }
+
+        .header-action-btn:disabled {
+            opacity: 0.2;
+            cursor: not-allowed;
+            filter: grayscale(1);
+        }
+
+        .header-action-btn .icon {
+            font-size: 1.4rem;
+        }
+
+        .header-action-btn .label {
+            font-size: 0.7rem;
+            font-weight: 600;
+        }
+
+        @media (min-width: 550px) {
+            /* If the container is very wide (though root is capped), we could try side-by-side */
+            /* But for PWA, center-stacked looks very clean */
+        }
+
+        .reset-data-btn {
+            display: none;
+            /* Removed in favor of header-action-btn */
+        }
+
+        .input-group {
+            display: flex;
+            gap: 12px;
+            margin-bottom: 24px;
+        }
+
+        input[type="text"] {
+            flex: 1;
+            padding: 14px 20px;
+            border: 2px solid #e5e7eb;
+            border-radius: 12px;
+            font-size: 1.1rem;
+            font-family: inherit;
+            outline: none;
+            transition: border-color 0.2s;
+        }
+
+        input[type="text"]:focus {
+            border-color: var(--primary);
+        }
+
+        .add-btn {
+            background: var(--primary);
+            color: white;
+            border: none;
+            border-radius: 12px;
+            padding: 0 24px;
+            font-weight: 600;
+            font-family: inherit;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            /* Flexbox for centering content */
+            align-items: center;
+            justify-content: center;
+            min-height: 50px;
+            /* Ensure minimal touch size */
+        }
+
+        .add-btn span.icon {
+            display: none;
+        }
+
+        /* Default hide icon on desktop */
+
+        .add-btn:hover {
+            background: var(--primary-hover);
+            transform: translateY(-2px);
+        }
+
+        .add-btn:active {
+            transform: scale(0.95);
+        }
+
+        .todo-list {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+
+        .todo-item-wrapper {
+            margin-bottom: 16px;
+            transition: all 0.3s ease;
+        }
+
+        .todo-item {
+            display: flex;
+            align-items: center;
+            padding: 14px 18px;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+            position: relative;
+            cursor: grab;
+            transition: transform 0.2s, box-shadow 0.2s, background 0.2s;
+        }
+
+        .todo-item:active {
+            cursor: grabbing;
+        }
+
+        .todo-item.dragging {
+            opacity: 0.3;
+            transform: scale(0.98);
+        }
+
+        .todo-content {
+            display: flex;
+            align-items: center;
+            flex: 1;
+            margin: 0 40px;
+            cursor: pointer;
+        }
+
+        .todo-checkbox {
+            position: absolute;
+            left: 18px;
+            width: 22px;
+            height: 22px;
+            cursor: pointer;
+            accent-color: var(--primary);
+            margin: 0;
+            z-index: 2;
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateX(-10px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+
+        .todo-text {
+            color: var(--text-main);
+            font-size: 1.1rem;
+            font-weight: 500;
+            transition: all 0.2s;
+            text-align: center;
+            user-select: none;
+            cursor: text;
+            /* Indicaitng it's editable */
+        }
+
+        .todo-text.completed {
+            text-decoration: line-through;
+            color: var(--text-muted);
+            opacity: 0.6;
+        }
+
+        .action-buttons {
+            position: absolute;
+            right: 8px;
+            display: flex;
+            gap: 4px;
+            z-index: 2;
+        }
+
+        .icon-btn {
+            background: transparent;
+            border: none;
+            padding: 6px;
+            cursor: pointer;
+            border-radius: 8px;
+            transition: all 0.2s;
+            color: var(--text-muted);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .icon-btn:hover {
+            background: #f3f4f6;
+            color: var(--primary);
+        }
+
+        .icon-btn.delete:hover {
+            background: #fee2e2;
+            color: var(--danger);
+        }
+
+        /* Sub-tasks styles */
+        .sub-tasks-container {
+            margin-left: 20px;
+            margin-top: 10px;
+            padding-left: 20px;
+            border-left: 2px solid #f3f4f6;
+            animation: slideDown 0.3s ease-out;
+            display: flex;
+            flex-direction: column;
+            align-items: flex-start;
+            /* 하위 항목들을 왼쪽으로 정렬 */
+        }
+
+        @keyframes slideDown {
+            from {
+                opacity: 0;
+                transform: translateY(-10px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .sub-task-item {
+            display: flex;
+            align-items: flex-start;
+            padding: 10px 14px;
+            background: rgba(255, 255, 255, 0.7);
+            border-radius: 10px;
+            margin-bottom: 6px;
+            font-size: 0.95rem;
+            width: 100%;
+            box-sizing: border-box;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.03);
+            transition: all 0.2s;
+            white-space: normal;
+            word-break: break-all;
+            position: relative;
+            padding-left: 42px;
+            /* 체크박스 공간 확보 */
+        }
+
+        .sub-task-checkbox {
+            position: absolute;
+            left: 14px;
+            /* 사용자가 지정한 왼쪽 끝 위치 */
+            top: 13px;
+            width: 16px;
+            height: 16px;
+            cursor: pointer;
+            accent-color: var(--primary);
+            margin: 0 !important;
+            padding: 0 !important;
+        }
+
+        .sub-task-item:hover {
+            background: white;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.05);
+        }
+
+        .sub-task-input-group {
+            display: flex;
+            gap: 8px;
+            margin-top: 10px;
+            width: 100%;
+            max-width: 350px;
+        }
+
+        .sub-task-input {
+            flex: 1;
+            padding: 10px 14px;
+            font-size: 0.9rem;
+            border-radius: 10px;
+            border: 1px solid #e5e7eb;
+            font-family: inherit;
+            outline: none;
+            transition: all 0.2s;
+            background: rgba(255, 255, 255, 0.5);
+        }
+
+        .sub-add-btn {
+            background: var(--primary);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            padding: 0 12px;
+            font-weight: 600;
+            font-family: inherit;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-size: 0.85rem;
+        }
+
+        .sub-add-btn:hover {
+            background: var(--primary-hover);
+        }
+
+        .sub-task-input:focus {
+            border-color: var(--primary);
+        }
+
+        .empty-state {
+            text-align: center;
+            color: var(--text-muted);
+            margin-top: 2rem;
+            font-size: 1.2rem;
+        }
+
+        /* Selection Toolbar - Modified for Inline Positioning */
+        .selection-toolbar {
+            /* positioning handled by flow now, removed fixed positioning */
+            background: var(--glass-bg);
+            backdrop-filter: blur(12px);
+            padding: 8px 16px;
+            border-radius: 16px;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
+            display: flex;
+            flex-direction: row;
+            flex-wrap: nowrap;
+            align-items: center;
+            justify-content: center;
+            /* Center buttons */
+            gap: 8px;
+            z-index: 100;
+            animation: slideDown 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            white-space: nowrap;
+            overflow-x: auto;
+            margin: -8px 10px 16px 10px;
+            /* Negative top margin to pull it up slightly, margin bottom for spacing */
+            position: relative;
+        }
+
+        /* Update animation for inline appearance */
+        @keyframes slideDown {
+            from {
+                opacity: 0;
+                transform: translateY(-10px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .toolbar-btn {
+            background: white;
+            border: 1px solid #e5e7eb;
+            padding: 6px 10px;
+            border-radius: 8px;
+            font-family: inherit;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            font-size: 0.8rem;
+            color: var(--text-main);
+            white-space: nowrap;
+            flex-shrink: 0;
+        }
+
+        .toolbar-btn:hover {
+            background: #f3f4f6;
+            transform: translateY(-1px);
+        }
+
+        .toolbar-btn.danger {
+            color: var(--danger);
+        }
+
+        .toolbar-btn.danger:hover {
+            background: #fef2f2;
+        }
+
+        .selection-check {
+            width: 18px;
+            height: 18px;
+            margin-right: 12px;
+            cursor: pointer;
+            accent-color: var(--primary);
+        }
+
+        .todo-item.selected {
+            background: #eff6ff;
+            border: 1px solid #bfdbfe;
+        }
+
+        .hidden-file-input {
+            display: none;
+        }
+
+        .clipboard-indicator {
+            background: #ecfdf5;
+            color: #059669;
+            padding: 8px 16px;
+            border-radius: 10px;
+            font-size: 0.85rem;
+            margin-bottom: 12px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            animation: fadeIn 0.3s ease-out;
+        }
+
+        .clipboard-content {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            flex: 1;
+        }
+
+        .clipboard-actions {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .dismiss-btn {
+            background: transparent;
+            border: none;
+            color: #059669;
+            cursor: pointer;
+            padding: 4px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            opacity: 0.7;
+            transition: all 0.2s;
+        }
+
+        .dismiss-btn:hover {
+            background: rgba(0, 0, 0, 0.05);
+            opacity: 1;
+        }
+    </style>
+</head>
+
+<body>
+    <div id="root"></div>
+
+    <script type="text/babel">
+        const { useState, useRef, useEffect } = React;
+
+        function App() {
+            // Load from LocalStorage
+            const [todos, setTodos] = useState(() => {
+                const saved = localStorage.getItem('todo_items');
+                return saved ? JSON.parse(saved) : [
+                    { id: 1, text: '안티그래비티 공부하기', completed: false, subTasks: [] },
+                    { id: 2, text: '투두 앱 완성하기', completed: true, subTasks: [] }
+                ];
+            });
+
+            const [appTitle, setAppTitle] = useState(() => localStorage.getItem('todo_app_title') || 'To-do List');
+            const [isEditingTitle, setIsEditingTitle] = useState(false);
+            const [tempTitle, setTempTitle] = useState(appTitle);
+
+            const [inputValue, setInputValue] = useState('');
+            const [draggingIndex, setDraggingIndex] = useState(null);
+            const [draggingSubTask, setDraggingSubTask] = useState(null); // { parentId, stId }
+
+            // Advanced Features State
+            const [selectedIds, setSelectedIds] = useState([]);
+            const [clipboard, setClipboard] = useState({ items: [], isCut: false });
+            const [isSelectionMode, setIsSelectionMode] = useState(false);
+            const fileInputRef = useRef(null);
+
+            // Undo/Redo State
+            const [history, setHistory] = useState([]);
+            const [redoStack, setRedoStack] = useState([]);
+
+            // Save state for undo
+            const saveState = (newTodos) => {
+                setHistory(prev => [...prev, todos]);
+                setRedoStack([]); // Clear redo stack on new action
+            };
+
+            const updateTodosWithSave = (newTodos) => {
+                saveState();
+                setTodos(newTodos);
+            };
+
+            // Keyboard Listeners
+            useEffect(() => {
+                const handleKeyDown = (e) => {
+                    if (e.ctrlKey && !e.shiftKey && e.key === 'z') {
+                        e.preventDefault();
+                        undo();
+                    } else if (e.ctrlKey && e.shiftKey && e.key === 'Z' || (e.ctrlKey && e.key === 'y')) {
+                        e.preventDefault();
+                        redo();
+                    }
+                };
+                window.addEventListener('keydown', handleKeyDown);
+                return () => window.removeEventListener('keydown', handleKeyDown);
+            }, [todos, history, redoStack]);
+
+            // Save to LocalStorage whenever todos change
+            useEffect(() => {
+                localStorage.setItem('todo_items', JSON.stringify(todos));
+            }, [todos]);
+
+            useEffect(() => {
+                localStorage.setItem('todo_app_title', appTitle);
+            }, [appTitle]);
+
+            const saveTitle = () => {
+                if (tempTitle.trim()) {
+                    setAppTitle(tempTitle);
+                } else {
+                    setTempTitle(appTitle);
+                }
+                setIsEditingTitle(false);
+            };
+
+            const addTodo = () => {
+                if (inputValue.trim() === '') return;
+                const newTodo = {
+                    id: Date.now(),
+                    text: inputValue,
+                    completed: false,
+                    subTasks: []
+                };
+                updateTodosWithSave([...todos, newTodo]);
+                setInputValue('');
+            };
+
+            const deleteTodo = (id) => {
+                updateTodosWithSave(todos.filter(todo => todo.id !== id));
+            };
+
+            const toggleTodo = (id) => {
+                updateTodosWithSave(todos.map(todo =>
+                    todo.id === id ? { ...todo, completed: !todo.completed } : todo
+                ));
+            };
+
+            const addSubTask = (parentId, text) => {
+                if (!text.trim()) return;
+                updateTodosWithSave(todos.map(todo => {
+                    if (todo.id === parentId) {
+                        return {
+                            ...todo,
+                            subTasks: [...todo.subTasks, { id: Date.now(), text, completed: false }]
+                        };
+                    }
+                    return todo;
+                }));
+            };
+
+            const toggleSubTask = (parentId, subTaskId) => {
+                updateTodosWithSave(todos.map(todo => {
+                    if (todo.id === parentId) {
+                        return {
+                            ...todo,
+                            subTasks: todo.subTasks.map(st =>
+                                st.id === subTaskId ? { ...st, completed: !st.completed } : st
+                            )
+                        };
+                    }
+                    return todo;
+                }));
+            };
+
+            const deleteSubTask = (parentId, subTaskId) => {
+                updateTodosWithSave(todos.map(todo => {
+                    if (todo.id === parentId) {
+                        return {
+                            ...todo,
+                            subTasks: todo.subTasks.filter(st => st.id !== subTaskId)
+                        };
+                    }
+                    return todo;
+                }));
+            };
+
+            const updateTodo = (id, newText) => {
+                updateTodosWithSave(todos.map(todo =>
+                    todo.id === id ? { ...todo, text: newText } : todo
+                ));
+            };
+
+            const updateSubTask = (parentId, subTaskId, newText) => {
+                updateTodosWithSave(todos.map(todo => {
+                    if (todo.id === parentId) {
+                        return {
+                            ...todo,
+                            subTasks: todo.subTasks.map(st =>
+                                st.id === subTaskId ? { ...st, text: newText } : st
+                            )
+                        };
+                    }
+                    return todo;
+                }));
+            };
+
+            // Drag and Drop
+            const handleDragStart = (e, index) => {
+                setDraggingIndex(index);
+                e.dataTransfer.effectAllowed = 'move';
+            };
+
+            const handleDragOver = (e, index) => {
+                e.preventDefault();
+                if (draggingIndex === null || draggingIndex === index) return;
+
+                const newTodos = [...todos];
+                const item = newTodos.splice(draggingIndex, 1)[0];
+                newTodos.splice(index, 0, item);
+
+                setDraggingIndex(index);
+                setTodos(newTodos);
+            };
+
+            const handleDragEnd = () => {
+                setDraggingIndex(null);
+                setDraggingSubTask(null);
+            };
+
+            const handleSubTaskDragStart = (e, parentId, stId) => {
+                setDraggingSubTask({ parentId, stId });
+                e.dataTransfer.effectAllowed = 'move';
+                e.stopPropagation(); // Prevent main task drag
+            };
+
+            const handleSubTaskDrop = (targetParentId) => {
+                if (!draggingSubTask) return;
+                const { parentId: sourceParentId, stId } = draggingSubTask;
+                if (sourceParentId === targetParentId) return;
+
+                const sourceTodo = todos.find(t => t.id === sourceParentId);
+                const subTaskToMove = sourceTodo.subTasks.find(st => st.id === stId);
+
+                const newTodos = todos.map(todo => {
+                    if (todo.id === sourceParentId) {
+                        return { ...todo, subTasks: todo.subTasks.filter(st => st.id !== stId) };
+                    }
+                    if (todo.id === targetParentId) {
+                        return { ...todo, subTasks: [...todo.subTasks, subTaskToMove] };
+                    }
+                    return todo;
+                });
+
+                setTodos(newTodos);
+                setDraggingSubTask(null);
+            };
+
+            const handleUpdate = async () => {
+                if ('serviceWorker' in navigator) {
+                    try {
+                        const registration = await navigator.serviceWorker.getRegistration();
+                        if (registration) {
+                            alert("GitHub에서 새로운 버전을 확인하고 업데이트합니다...");
+                            await registration.update();
+                            // If update found, worker will be replaced and we reload
+                            window.location.reload();
+                        } else {
+                            alert("업데이트 서버에 연결할 수 없습니다. 페이지를 새로고침합니다.");
+                            window.location.reload();
+                        }
+                    } catch (err) {
+                        console.error("Update failed:", err);
+                        window.location.reload();
+                    }
+                } else {
+                    window.location.reload();
+                }
+            };
+
+            // Undo/Redo Logic
+            const undo = () => {
+                if (history.length === 0) return;
+                const prev = history[history.length - 1];
+                setRedoStack(prevRedo => [...prevRedo, todos]);
+                setHistory(prevHistory => prevHistory.slice(0, -1));
+                setTodos(prev);
+            };
+
+            const redo = () => {
+                if (redoStack.length === 0) return;
+                const next = redoStack[redoStack.length - 1];
+                setHistory(prevHistory => [...prevHistory, todos]);
+                setRedoStack(prevRedo => prevRedo.slice(0, -1));
+                setTodos(next);
+            };
+
+            // Advanced Features Logic
+            const toggleSelect = (id) => {
+                setSelectedIds(prev =>
+                    prev.includes(id) ? prev.filter(i => i !== id) : [...prev, id]
+                );
+            };
+
+            const toggleSelectionMode = () => {
+                setIsSelectionMode(!isSelectionMode);
+                setSelectedIds([]);
+            };
+
+            const handleBulkDelete = () => {
+                if (selectedIds.length === 0) return;
+                if (confirm(`${selectedIds.length}개 항목을 삭제하시겠습니까?`)) {
+                    updateTodosWithSave(todos.filter(t => !selectedIds.includes(t.id)));
+                    setSelectedIds([]);
+                    setIsSelectionMode(false);
+                }
+            };
+
+            const handleCopy = (isCut = false) => {
+                const itemsToCopy = todos.filter(t => selectedIds.includes(t.id));
+                setClipboard({ items: itemsToCopy.map(item => ({ ...item })), isCut });
+                if (isCut) {
+                    updateTodosWithSave(todos.filter(t => !selectedIds.includes(t.id)));
+                }
+                setSelectedIds([]);
+                setIsSelectionMode(false);
+            };
+
+            const handlePaste = () => {
+                if (clipboard.items.length === 0) return;
+                const newItems = clipboard.items.map(item => ({
+                    ...item,
+                    id: Date.now() + Math.random(),
+                    subTasks: item.subTasks.map(st => ({ ...st, id: Date.now() + Math.random() }))
+                }));
+                updateTodosWithSave([...todos, ...newItems]);
+
+                if (clipboard.isCut) {
+                    setClipboard({ items: [], isCut: false });
+                }
+            };
+
+            const getFormattedDate = () => {
+                const now = new Date();
+                const yy = String(now.getFullYear()).slice(-2);
+                const mm = String(now.getMonth() + 1).padStart(2, '0');
+                const dd = String(now.getDate()).padStart(2, '0');
+                const hh = String(now.getHours()).padStart(2, '0');
+                const min = String(now.getMinutes()).padStart(2, '0');
+                return `${yy}${mm}${dd}_${hh}${min}`;
+            };
+
+            const handleExport = () => {
+                const itemsToExport = selectedIds.length > 0
+                    ? todos.filter(t => selectedIds.includes(t.id))
+                    : todos;
+
+                const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(itemsToExport, null, 2));
+                const filename = `todos_${appTitle}_${getFormattedDate()}.json`;
+                const downloadAnchorNode = document.createElement('a');
+                downloadAnchorNode.setAttribute("href", dataStr);
+                downloadAnchorNode.setAttribute("download", filename);
+                document.body.appendChild(downloadAnchorNode);
+                downloadAnchorNode.click();
+                downloadAnchorNode.remove();
+
+                setIsSelectionMode(false);
+                setSelectedIds([]);
+            };
+
+            const handleImport = (event) => {
+                const file = event.target.files[0];
+                if (!file) return;
+
+                const reader = new FileReader();
+                reader.onload = (e) => {
+                    try {
+                        const importedData = JSON.parse(e.target.result);
+                        if (Array.isArray(importedData)) {
+                            const newItems = importedData.map(item => ({
+                                ...item,
+                                id: Date.now() + Math.random(),
+                                subTasks: item.subTasks.map(st => ({ ...st, id: Date.now() + Math.random() }))
+                            }));
+                            updateTodosWithSave([...todos, ...newItems]);
+                            alert(`${newItems.length}개 항목을 성공적으로 가져왔습니다.`);
+                        }
+                    } catch (err) {
+                        alert("파일 형식이 올바르지 않습니다.");
+                    }
+                };
+                reader.readAsText(file);
+                event.target.value = ''; // Reset input
+            };
+
+            // Calculate the ID of the last selected item in the list order
+            const lastSelectedId = React.useMemo(() => {
+                if (selectedIds.length === 0) return null;
+                // Find the last item in the current todos list that is also selected
+                let lastId = null;
+                for (let i = todos.length - 1; i >= 0; i--) {
+                    if (selectedIds.includes(todos[i].id)) {
+                        lastId = todos[i].id;
+                        break;
+                    }
+                }
+                return lastId;
+            }, [todos, selectedIds]);
+
+            const clearClipboard = () => {
+                setClipboard({ items: [], isCut: false });
+            };
+
+            return (
+                <div className="todo-container">
+                    <div className="header-container">
+                        {isEditingTitle ? (
+                            <input
+                                type="text"
+                                className="title-input"
+                                value={tempTitle}
+                                onChange={(e) => setTempTitle(e.target.value)}
+                                onBlur={saveTitle}
+                                onKeyPress={(e) => e.key === 'Enter' && saveTitle()}
+                                autoFocus
+                            />
+                        ) : (
+                            <h1 onClick={() => setIsEditingTitle(true)} title="클릭하여 제목 수정">
+                                {appTitle}
+                            </h1>
+                        )}
+                        <div className="header-btn-group">
+                            <button className="header-action-btn" onClick={undo} disabled={history.length === 0} title="되돌리기 (Ctrl+Z)">
+                                <span className="icon">↩️</span>
+                                <span className="label">되돌리기</span>
+                            </button>
+                            <button className="header-action-btn" onClick={redo} disabled={redoStack.length === 0} title="다시 실행 (Ctrl+Shift+Z)">
+                                <span className="icon">↪️</span>
+                                <span className="label">다시 실행</span>
+                            </button>
+                            <button className="header-action-btn" onClick={() => fileInputRef.current.click()} title="데이터 가져오기">
+                                <span className="icon">📥</span>
+                                <span className="label">가져오기</span>
+                            </button>
+                            <button className="header-action-btn" onClick={toggleSelectionMode} title="다중 선택 모드">
+                                <span className="icon">✅</span>
+                                <span className="label">선택</span>
+                            </button>
+                            <button className="header-action-btn" onClick={handleUpdate} title="업데이트 확인">
+                                <span className="icon">🔄</span>
+                                <span className="label">업데이트</span>
+                            </button>
+                        </div>
+                    </div>
+
+                    <input type="file" ref={fileInputRef} className="hidden-file-input" onChange={handleImport} accept=".json" />
+
+                    {clipboard.items.length > 0 && (
+                        <div className="clipboard-indicator">
+                            <div className="clipboard-content">
+                                <span>📋 {clipboard.items.length}개 {clipboard.isCut ? '잘라내기됨' : '복사됨'}</span>
+                            </div>
+                            <div className="clipboard-actions">
+                                <button className="sub-add-btn" onClick={handlePaste}>아래에 붙여넣기</button>
+                                <button className="dismiss-btn" onClick={clearClipboard} title="닫기">
+                                    ✕
+                                </button>
+                            </div>
+                        </div>
+                    )}
+
+                    <div className="input-group">
+                        <input
+                            type="text"
+                            placeholder="오늘의 할 일은?"
+                            value={inputValue}
+                            onChange={(e) => setInputValue(e.target.value)}
+                            onKeyPress={(e) => e.key === 'Enter' && addTodo()}
+                        />
+                        <button className="add-btn" onClick={addTodo}>
+                            <span className="text">추가</span>
+                            <span className="icon">+</span>
+                        </button>
+                    </div>
+
+                    <div className="todo-list">
+                        {todos.map((todo, index) => (
+                            <React.Fragment key={todo.id}>
+                                <TodoItem
+                                    todo={todo}
+                                    index={index}
+                                    isDragging={draggingIndex === index}
+                                    onToggle={() => toggleTodo(todo.id)}
+                                    onDelete={() => deleteTodo(todo.id)}
+                                    onAddSubTask={(text) => addSubTask(todo.id, text)}
+                                    onToggleSubTask={(stId) => toggleSubTask(todo.id, stId)}
+                                    onDeleteSubTask={(stId) => deleteSubTask(todo.id, stId)}
+                                    onUpdateTodo={(newText) => updateTodo(todo.id, newText)}
+                                    onUpdateSubTask={(stId, newText) => updateSubTask(todo.id, stId, newText)}
+                                    onDragStart={(e) => handleDragStart(e, index)}
+                                    onDragOver={(e) => handleDragOver(e, index)}
+                                    onDragEnd={handleDragEnd}
+                                    onSubTaskDragStart={(e, stId) => handleSubTaskDragStart(e, todo.id, stId)}
+                                    onSubTaskDrop={() => handleSubTaskDrop(todo.id)}
+                                    isSelectionMode={isSelectionMode}
+                                    isSelected={selectedIds.includes(todo.id)}
+                                    onSelect={() => toggleSelect(todo.id)}
+                                />
+                                {isSelectionMode && selectedIds.length > 0 && lastSelectedId === todo.id && (
+                                    <div className="selection-toolbar">
+                                        <button className="toolbar-btn" onClick={() => handleCopy(false)}>복사</button>
+                                        <button className="toolbar-btn" onClick={() => handleCopy(true)}>잘라내기</button>
+                                        <button className="toolbar-btn" onClick={handleExport}>내보내기</button>
+                                        <button className="toolbar-btn danger" onClick={handleBulkDelete}>삭제</button>
+                                    </div>
+                                )}
+                            </React.Fragment>
+                        ))}
+                    </div>
+
+                    {todos.length === 0 && (
+                        <div className="empty-state">
+                            자유 시간이에요! 🎈
+                        </div>
+                    )}
+                </div>
+            );
+        }
+
+        function TodoItem({
+            todo, index, isDragging, onToggle, onDelete,
+            onAddSubTask, onToggleSubTask, onDeleteSubTask,
+            onDragStart, onDragOver, onDragEnd,
+            onSubTaskDragStart, onSubTaskDrop,
+            onUpdateTodo, onUpdateSubTask,
+            isSelectionMode, isSelected, onSelect
+        }) {
+            const [subInput, setSubInput] = useState('');
+            const [showSubInput, setShowSubInput] = useState(false);
+            const [editing, setEditing] = useState(false);
+            const [editValue, setEditValue] = useState(todo.text);
+            const [editingSubTaskId, setEditingSubTaskId] = useState(null);
+            const [editSubValue, setEditSubValue] = useState('');
+
+            const longPressTimer = useRef(null);
+            const isLongPress = useRef(false);
+
+            const handleDrop = (e) => {
+                e.preventDefault();
+                onSubTaskDrop();
+            };
+
+            const handleTouchStart = (type, id, initialValue) => {
+                isLongPress.current = false;
+                longPressTimer.current = setTimeout(() => {
+                    isLongPress.current = true;
+                    if (type === 'main') {
+                        setEditValue(initialValue);
+                        setEditing(true);
+                    } else {
+                        setEditingSubTaskId(id);
+                        setEditSubValue(initialValue);
+                    }
+                }, 1000); // 1초 이상 꾹 누름
+            };
+
+            const handleTouchEnd = () => {
+                if (longPressTimer.current) {
+                    clearTimeout(longPressTimer.current);
+                }
+            };
+
+            const handleMainClick = () => {
+                if (!isLongPress.current) {
+                    onToggle();
+                }
+            };
+
+            const handleMainTextClick = (e) => {
+                e.stopPropagation();
+                setEditValue(todo.text);
+                setEditing(true);
+            };
+
+            const saveMainEdit = () => {
+                if (editValue.trim() && editValue !== todo.text) {
+                    onUpdateTodo(editValue);
+                }
+                setEditing(false);
+            };
+
+            const handleSubClick = (st) => {
+                if (!isLongPress.current) {
+                    onToggleSubTask(st.id);
+                }
+            };
+
+            const handleSubTextClick = (e, st) => {
+                e.stopPropagation();
+                setEditingSubTaskId(st.id);
+                setEditSubValue(st.text);
+            };
+
+            const saveSubEdit = (stId) => {
+                if (editSubValue.trim()) {
+                    onUpdateSubTask(stId, editSubValue);
+                }
+                setEditingSubTaskId(null);
+            };
+
+            return (
+                <div
+                    className={`todo-item-wrapper ${isDragging ? 'dragging' : ''}`}
+                    onDragOver={onDragOver}
+                    onDrop={handleDrop}
+                >
+                    <div
+                        className={`todo-item ${isSelected ? 'selected' : ''}`}
+                        draggable={!showSubInput && !editing && !editingSubTaskId && !isSelectionMode}
+                        onDragStart={onDragStart}
+                        onDragEnd={onDragEnd}
+                        onTouchStart={() => handleTouchStart('main', todo.id, todo.text)}
+                        onTouchEnd={handleTouchEnd}
+                        onTouchMove={handleTouchEnd}
+                        onClick={isSelectionMode ? onSelect : null}
+                    >
+                        {isSelectionMode && (
+                            <input
+                                type="checkbox"
+                                className="selection-check"
+                                checked={isSelected}
+                                onChange={onSelect}
+                                onClick={(e) => e.stopPropagation()}
+                            />
+                        )}
+                        <input
+                            type="checkbox"
+                            className="todo-checkbox"
+                            style={{ left: isSelectionMode ? '50px' : '18px' }}
+                            checked={todo.completed}
+                            onChange={onToggle}
+                        />
+                        <div className="todo-content" style={{ margin: isSelectionMode ? '0 40px 0 72px' : '0 40px' }} onClick={handleMainClick}>
+                            {editing ? (
+                                <input
+                                    type="text"
+                                    className="todo-text"
+                                    style={{ width: '100%', border: '1px solid var(--primary)', borderRadius: '4px', padding: '2px 4px' }}
+                                    value={editValue}
+                                    onChange={(e) => setEditValue(e.target.value)}
+                                    onBlur={saveMainEdit}
+                                    onKeyPress={(e) => e.key === 'Enter' && saveMainEdit()}
+                                    autoFocus
+                                    onClick={(e) => e.stopPropagation()}
+                                />
+                            ) : (
+                                <span
+                                    className={`todo-text ${todo.completed ? 'completed' : ''}`}
+                                    onClick={handleMainTextClick}
+                                >
+                                    {todo.text}
+                                </span>
+                            )}
+                        </div>
+                        <div className="action-buttons">
+                            <button className="icon-btn" onClick={() => setShowSubInput(!showSubInput)} title="하위 추가">
+                                ➕
+                            </button>
+                            <button className="icon-btn delete" onClick={onDelete} title="삭제">
+                                🗑️
+                            </button>
+                        </div>
+                    </div>
+
+                    {/* Sub-tasks List */}
+                    {todo.subTasks.length > 0 && (
+                        <div className="sub-tasks-container">
+                            {todo.subTasks.map(st => (
+                                <div
+                                    key={st.id}
+                                    className="sub-task-item"
+                                    onClick={() => handleSubClick(st)}
+                                    style={{ cursor: 'pointer' }}
+                                    draggable={!editing && !editingSubTaskId}
+                                    onDragStart={(e) => onSubTaskDragStart(e, st.id)}
+                                    onTouchStart={() => handleTouchStart('sub', st.id, st.text)}
+                                    onTouchEnd={handleTouchEnd}
+                                    onTouchMove={handleTouchEnd}
+                                >
+                                    <input
+                                        type="checkbox"
+                                        className="sub-task-checkbox"
+                                        checked={st.completed}
+                                        onChange={(e) => {
+                                            e.stopPropagation();
+                                            onToggleSubTask(st.id);
+                                        }}
+                                    />
+                                    {editingSubTaskId === st.id ? (
+                                        <input
+                                            type="text"
+                                            className="sub-task-input"
+                                            style={{ flex: 1, padding: '2px 4px', margin: '0 8px' }}
+                                            value={editSubValue}
+                                            onChange={(e) => setEditSubValue(e.target.value)}
+                                            onBlur={() => saveSubEdit(st.id)}
+                                            onKeyPress={(e) => e.key === 'Enter' && saveSubEdit(st.id)}
+                                            autoFocus
+                                            onClick={(e) => e.stopPropagation()}
+                                        />
+                                    ) : (
+                                        <span
+                                            onClick={(e) => handleSubTextClick(e, st)}
+                                            className="todo-text" /* Reusing cursor style */
+                                            style={{
+                                                flex: 1,
+                                                textDecoration: st.completed ? 'line-through' : 'none',
+                                                opacity: st.completed ? 0.6 : 1,
+                                                transition: 'all 0.2s',
+                                                whiteSpace: 'normal',
+                                                wordBreak: 'break-all',
+                                                marginRight: '8px',
+                                                lineHeight: '1.4',
+                                                fontSize: '0.95rem',
+                                                textAlign: 'left'
+                                            }}
+                                        >
+                                            {st.text}
+                                        </span>
+                                    )}
+                                    <button
+                                        className="icon-btn delete"
+                                        onClick={(e) => {
+                                            e.stopPropagation();
+                                            onDeleteSubTask(st.id);
+                                        }}
+                                        style={{ padding: '2px' }}
+                                    >
+                                        ×
+                                    </button>
+                                </div>
+                            ))}
+                        </div>
+                    )}
+
+                    {/* Sub-task Input */}
+                    {showSubInput && (
+                        <div className="sub-task-input-group">
+                            <input
+                                type="text"
+                                className="sub-task-input"
+                                placeholder="조금 더 추가하면..."
+                                value={subInput}
+                                onChange={(e) => setSubInput(e.target.value)}
+                                onKeyPress={(e) => {
+                                    if (e.key === 'Enter') {
+                                        onAddSubTask(subInput);
+                                        setSubInput('');
+                                        setShowSubInput(false);
+                                    }
+                                }}
+                                autoFocus
+                            />
+                            <button
+                                className="sub-add-btn"
+                                onClick={() => {
+                                    onAddSubTask(subInput);
+                                    setSubInput('');
+                                    setShowSubInput(false);
+                                }}
+                            >
+                                추가
+                            </button>
+                        </div>
+                    )}
+                </div>
+            );
+        }
+
+        const root = ReactDOM.createRoot(document.getElementById('root'));
+        root.render(<App />);
+    </script>
+</body>
+
+</html>

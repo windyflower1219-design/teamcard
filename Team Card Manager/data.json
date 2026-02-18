@@ -1,0 +1,69 @@
+{
+  "users": [
+    {
+      "id": "tester1",
+      "password": "password123"
+    },
+    {
+      "id": "windyflower",
+      "password": "77365floweR!"
+    }
+  ],
+  "members": {
+    "tester1": [
+      {
+        "id": 1771139192931,
+        "name": "홍길동",
+        "role": "MANAGER",
+        "budgets": [
+          {
+            "amount": 100000,
+            "effectiveDate": "2026-01"
+          }
+        ]
+      }
+    ],
+    "windyflower": [
+      {
+        "id": 1771337638300,
+        "name": "김승택",
+        "role": "MANAGER",
+        "budgets": [
+          {
+            "amount": 100000,
+            "effectiveDate": "2026-02"
+          },
+          {
+            "amount": 100000,
+            "effectiveDate": "2026-02"
+          }
+        ]
+      },
+      {
+        "id": 1771339527624,
+        "name": "최동혁",
+        "role": "MEMBER",
+        "budgets": [
+          {
+            "amount": 30000,
+            "effectiveDate": "2026-02"
+          }
+        ]
+      }
+    ]
+  },
+  "expenses": {
+    "tester1": [],
+    "windyflower": [
+      {
+        "id": 1771340301712,
+        "store": "아이고",
+        "amount": 12555,
+        "date": "2026-02-17",
+        "users": [
+          1771339527624
+        ]
+      }
+    ]
+  }
+}

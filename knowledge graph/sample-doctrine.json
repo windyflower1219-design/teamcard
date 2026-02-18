@@ -1,0 +1,231 @@
+{
+    "doc_title": "ATP 3-21.20 Infantry Battalion",
+    "issuing_org": "HEADQUARTERS DEPARTMENT OF THE ARMY",
+    "edition_or_revision": null,
+    "paragraphs": [
+        {
+            "paragraph_number": "3-6",
+            "paragraph_title": "defense of a linear obstacle",
+            "raw_text": "The defense of a linear obstacle is similar to a forward defense (see paragraphs 3-193) with the intent being to limit the terrain over which the enemy can gain influence or control. A linear obstacle adds to the strength of the defense and can be a river, a stream with steep embankments or a manmade obstacle such as a highway or embankment. The key to success in a defense of a linear obstacle is maintaining the integrity of the defense by preventing the enemy from securing a foothold on the friendly side of the obstacle. When the enemy is able to gain and maintain a foothold, the battalion must contain it and prevent its expansion. The battalion commander should have a plan to conduct a delay if the enemy gains sufficient strength to attack out of the bridgehead. Defending units integrate additional obstacles to stop enemy forces, channel them into planned engagement areas, and to further, enable the integrity of the linear obstacle. The defense of a linear obstacle usually forces the enemy to deploy, concentrate forces, and conduct breaching operations (figure 3-1). When attacked, the defending force isolates the enemy, conducts counterattacks, and delivers fires onto the concentrated force to defeat attempts to breach the obstacle.",
+            "sentences": [
+                {
+                    "id": "S1",
+                    "text": "The defense of a linear obstacle is similar to a forward defense (see paragraphs 3-193) with the intent being to limit the terrain over which the enemy can gain influence or control.",
+                    "completed": false
+                },
+                {
+                    "id": "S2",
+                    "text": "A linear obstacle adds to the strength of the defense and can be a river, a stream with steep embankments or a manmade obstacle such as a highway or embankment.",
+                    "completed": false
+                },
+                {
+                    "id": "S3",
+                    "text": "The key to success in a defense of a linear obstacle is maintaining the integrity of the defense by preventing the enemy from securing a foothold on the friendly side of the obstacle.",
+                    "completed": false
+                },
+                {
+                    "id": "S4",
+                    "text": "When the enemy is able to gain and maintain a foothold, the battalion must contain it and prevent its expansion.",
+                    "completed": false
+                },
+                {
+                    "id": "S5",
+                    "text": "The battalion commander should have a plan to conduct a delay if the enemy gains sufficient strength to attack out of the bridgehead.",
+                    "completed": false
+                },
+                {
+                    "id": "S6",
+                    "text": "Defending units integrate additional obstacles to stop enemy forces, channel them into planned engagement areas, and to further, enable the integrity of the linear obstacle.",
+                    "completed": false
+                },
+                {
+                    "id": "S7",
+                    "text": "The defense of a linear obstacle usually forces the enemy to deploy, concentrate forces, and conduct breaching operations (figure 3-1).",
+                    "completed": false
+                },
+                {
+                    "id": "S8",
+                    "text": "When attacked, the defending force isolates the enemy, conducts counterattacks, and delivers fires onto the concentrated force to defeat attempts to breach the obstacle.",
+                    "completed": false
+                }
+            ],
+            "keywords": [
+                {
+                    "keyword": "defense of a linear obstacle",
+                    "evidence_sids": [
+                        "S1",
+                        "S3",
+                        "S7"
+                    ],
+                    "color": "#4CAF50"
+                },
+                {
+                    "keyword": "forward defense",
+                    "evidence_sids": [
+                        "S1"
+                    ],
+                    "color": "#2196F3"
+                },
+                {
+                    "keyword": "limit terrain influence/control",
+                    "evidence_sids": [
+                        "S1"
+                    ],
+                    "color": "#FF9800"
+                },
+                {
+                    "keyword": "linear obstacle types (river/stream/highway/embankment)",
+                    "evidence_sids": [
+                        "S2"
+                    ],
+                    "color": "#9C27B0"
+                },
+                {
+                    "keyword": "integrity of the defense",
+                    "evidence_sids": [
+                        "S3",
+                        "S6"
+                    ],
+                    "color": "#F44336"
+                },
+                {
+                    "keyword": "prevent enemy foothold",
+                    "evidence_sids": [
+                        "S3"
+                    ],
+                    "color": "#00BCD4"
+                },
+                {
+                    "keyword": "foothold containment and expansion prevention",
+                    "evidence_sids": [
+                        "S4"
+                    ],
+                    "color": "#FFEB3B"
+                },
+                {
+                    "keyword": "bridgehead",
+                    "evidence_sids": [
+                        "S5"
+                    ],
+                    "color": "#795548"
+                },
+                {
+                    "keyword": "delay plan",
+                    "evidence_sids": [
+                        "S5"
+                    ],
+                    "color": "#607D8B"
+                },
+                {
+                    "keyword": "additional obstacles",
+                    "evidence_sids": [
+                        "S6"
+                    ],
+                    "color": "#E91E63"
+                },
+                {
+                    "keyword": "channeling into engagement areas",
+                    "evidence_sids": [
+                        "S6"
+                    ],
+                    "color": "#3F51B5"
+                },
+                {
+                    "keyword": "enemy breaching operations",
+                    "evidence_sids": [
+                        "S7",
+                        "S8"
+                    ],
+                    "color": "#8BC34A"
+                },
+                {
+                    "keyword": "isolation and counterattack",
+                    "evidence_sids": [
+                        "S8"
+                    ],
+                    "color": "#FFC107"
+                },
+                {
+                    "keyword": "fires on concentrated force",
+                    "evidence_sids": [
+                        "S8"
+                    ],
+                    "color": "#009688"
+                }
+            ],
+            "claims": [
+                {
+                    "claim": "선형 장애물 방어는 전방방어와 유사하며 적의 영향력/통제권 확대를 제한하는 지형적 목적을 가진다.",
+                    "evidence_sids": [
+                        "S1"
+                    ],
+                    "completed": false
+                },
+                {
+                    "claim": "선형 장애물은 방어력을 강화하며 자연/인공 장애물(강, 급경사 하천, 고속도로, 제방 등)로 구성될 수 있다.",
+                    "evidence_sids": [
+                        "S2"
+                    ],
+                    "completed": false
+                },
+                {
+                    "claim": "성공의 핵심은 장애물 아군 측에서 적의 거점(foothold) 확보를 시지하고, 확보 시에는 격리·역습·집중화력을 통해 돌파 시도를 저지한다.",
+                    "evidence_sids": [
+                        "S3",
+                        "S6",
+                        "S8"
+                    ],
+                    "completed": false
+                },
+                {
+                    "claim": "적이 거점을 확보·유지하면 대대는 이를 봉쇄하고 확장을 방지해야 한다.",
+                    "evidence_sids": [
+                        "S4"
+                    ],
+                    "completed": false
+                },
+                {
+                    "claim": "적 교두보 전력이 교두보 밖으로 공격할 만큼 충분해질 경우 대대장은 지연(delay) 계획을 갖춰야 한다.",
+                    "evidence_sids": [
+                        "S5"
+                    ],
+                    "completed": false
+                },
+                {
+                    "claim": "방어부대는 추가 장애물을 통합해 적을 저지·유도(교전지역으로)하고, 격리·역습·집중 적 대한 화력 투사로 돌파 시도를 저지한다.",
+                    "evidence_sids": [
+                        "S6",
+                        "S8"
+                    ],
+                    "completed": false
+                }
+            ],
+            "references": [
+                {
+                    "ref_text": "see paragraphs 3-193",
+                    "ref_type": "paragraph",
+                    "ref_target": "3-193",
+                    "evidence_sids": [
+                        "S1"
+                    ]
+                },
+                {
+                    "ref_text": "(figure 3-1)",
+                    "ref_type": "figure",
+                    "ref_target": "3-1",
+                    "evidence_sids": [
+                        "S7"
+                    ]
+                }
+            ],
+            "summary": {
+                "text_ko": "선형 장애물(하천·급경사 하천·고속도로·제방 등)을 이용한 방어는 전방방어와 유사하며, 적이 영향력/통제권을 확대할 수 있는 지형을 제한하는 데 목적이 있다. 핵심은 장애물 아군 측에서의 적 거점(foothold) 확보를 시지하고, 확보 시에는 봉쇄하고 확장을 방지해야 한다. 대대장은 적이 교두보에서 공격할 충분한 전력을 얻으면 지연 계획을 준비해야 한다. 방어부대는 추가 장애물을 통합해 적을 저지·유도하며, 격리·역습·화력을 통해 돌파 시도를 격퇴한다.",
+                "evidence_sids": [
+                    "S1",
+                    "S3",
+                    "S8"
+                ]
+            }
+        }
+    ]
+}
